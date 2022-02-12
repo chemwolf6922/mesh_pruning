@@ -1,5 +1,6 @@
 // @ts-check
 import util from 'util';
+import { Heap, HeapValue } from './cHeap/Heap.mjs';
 
 const COST = {
     NOT_FOUND:5000,
@@ -12,6 +13,7 @@ const CUTOFF_DISTANCE = 10;
 const LEARNING_RATE = 0.0003;
 
 class node{
+    heapValue = undefined;
     switchEnabled = true;
     lastSwitchEnabled = true;
     /**
@@ -40,6 +42,7 @@ class node{
     }
 
     reset(){
+        this.heapValue = undefined;
         this.minCost = Infinity;
         this.visited = false;
     }
@@ -49,13 +52,22 @@ class node{
         this.switchEnabled = this.sigmoid(this.weight) >= Math.random();
     }
 
-    visitNeighbors(){
+    /**
+     * @param {Heap} minHeap
+     */
+    visitNeighbors(minHeap){
         if(this.switchEnabled){
             this.neighbors.forEach(n=>{
                 if(!n.node.visited){
                     let newCost = this.minCost + n.cost;
                     if(newCost < n.node.minCost){
                         n.node.minCost = newCost;
+                        if(n.node.heapValue === undefined){
+                            n.node.heapValue = new HeapValue(n.node);
+                            minHeap.add(n.node.heapValue);
+                        }else{
+                            minHeap.adjust(n.node.heapValue);
+                        }
                     }
                 }
             });
@@ -94,6 +106,8 @@ class graph{
      * @type {Array<node>}
      */
     nodes = [];
+
+    minHeap = new Heap(/** @param {node} A @param {node} B */(A,B)=>A.minCost>B.minCost);
 
     /**
      * 
@@ -156,18 +170,8 @@ class graph{
      * @returns {node | undefined}
      */
     getNextNodeToVisit(){
-        let minCost = Infinity;
-        /** @type {node} */
-        let next = undefined;
-        this.nodes.forEach(n=>{
-            if(!n.visited){
-                if(n.minCost < minCost){
-                    minCost = n.minCost;
-                    next = n;
-                }
-            }
-        });
-        return next;
+        let v = this.minHeap.pop()?.value;
+        return v;
     }
 
     reset(){
@@ -190,9 +194,10 @@ class graph{
     }
 
     calculateCost(){
+        this.minHeap = new Heap(/** @param {node} A @param {node} B */(A,B)=>A.minCost>B.minCost);
         let n = this.nodes[0];
         do {
-            n.visitNeighbors();
+            n.visitNeighbors(this.minHeap);
         } while ((n = this.getNextNodeToVisit())!==undefined);
         let pathCost = 0;
         this.nodes.forEach(n=>{
@@ -221,7 +226,7 @@ class graph{
 
 /** @type {number} */
 let lastCost = undefined;
-let g = new graph({nNode:300,fieldX:30,fieldY:40});
+let g = new graph({nNode:1000,fieldX:30,fieldY:40});
 g.reset();
 g.setSwitch(true);
 lastCost = g.calculateCost();
