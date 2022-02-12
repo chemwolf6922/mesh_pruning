@@ -1,0 +1,3 @@
+[submodule "cHeap"]
+	path = cHeap
+	url = git@github.com:chemwolf6922/cHeap.git
