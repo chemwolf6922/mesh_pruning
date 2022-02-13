@@ -240,6 +240,7 @@ for(let i=0;i<100000;i++){
     let newCost = g.calculateCost();
     console.log(`Round ${i} cost: ${newCost}`);
     let delta = (newCost-lastCost)*LEARNING_RATE;
+    lastCost = newCost;
     g.updateWeight(delta);
 }
 
