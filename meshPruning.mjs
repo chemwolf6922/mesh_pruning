@@ -10,7 +10,7 @@ const COST = {
 const INIT_WEIGHT = 1.5;
 const CUTOFF_DISTANCE = 10;
  
-const LEARNING_RATE = 0.0003;
+const LEARNING_RATE = 0.003;
 
 class node{
     heapValue = undefined;
@@ -234,7 +234,7 @@ console.log(`Inital cost: ${lastCost}`);
 
 console.log(util.inspect(g.dump(),{maxArrayLength:null,depth:null,showHidden:false}));
 
-for(let i=0;i<100000;i++){
+for(let i=0;i<20000;i++){
     g.reset();
     g.setSwitch();
     let newCost = g.calculateCost();
